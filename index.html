@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Inventario RapiTienda Campo Alegre</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#007AFF">
+    <link rel="apple-touch-icon" href="logo.jpg">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <style>
+        /* --- ESTILOS CORE --- */
+        :root { --ios-bg: #F2F2F7; --ios-card: #FFFFFF; --ios-blue: #007AFF; --ios-green: #34C759; --ios-text: #1C1C1E; --ios-input-bg: #E5E5EA; }
+        body { background-color: var(--ios-bg); font-family: -apple-system, BlinkMacSystemFont, sans-serif; color: var(--ios-text); padding-bottom: 100px; }
+        .navbar-ios { background-color: rgba(255, 255, 255, 0.90); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; padding-top: 1rem !important; padding-bottom: 1rem !important; }
+        .brand-text-main { font-size: 1.8rem; font-weight: 800; color: var(--ios-blue); letter-spacing: -0.5px; line-height: 1; }
+        .brand-text-sub { font-size: 1.1rem; font-weight: 600; color: var(--ios-text); }
+        .btn-pill-nav { border-radius: 50px; font-weight: 700; padding: 8px 16px; display: flex; align-items: center; border: none; box-shadow: 0 2px 6px rgba(0,0,0,0.08); transition: all 0.2s; }
+        .btn-pill-nav:active { transform: scale(0.97); }
+        .btn-install { background: var(--ios-green); color: white; box-shadow: 0 4px 10px rgba(52, 199, 89, 0.3); }
+        .btn-save-local { background: white; color: var(--ios-blue); }
+        .btn-backup { background: white; color: var(--ios-text); }
+        .btn-finish { background: var(--ios-blue); color: white; box-shadow: 0 4px 10px rgba(0, 122, 255, 0.3); }
+        .card-ios { background: var(--ios-card); border-radius: 16px; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.03); margin-bottom: 12px; transition: transform 0.1s; }
+        .card-ios:active { transform: scale(0.99); }
+        .card-contado { background-color: #F0FFF4; box-shadow: 0 0 0 2px var(--ios-green) inset; }
+        .stock-input { background-color: var(--ios-input-bg); border: none; border-radius: 10px; font-size: 1.4rem; font-weight: 700; text-align: center; height: 50px; }
+        .stock-input:focus { background-color: #fff; box-shadow: 0 0 0 2px var(--ios-blue); outline: none; }
+        .btn-circle { width: 45px; height: 45px; border-radius: 50%; border: none; font-weight: 600; display: flex; align-items: center; justify-content: center; font-size: 1rem; margin: 0 3px; }
+        .btn-plus-1 { background: #EEF5FF; color: var(--ios-blue); }
+        .btn-plus-5 { background: #E5E5EA; color: var(--ios-blue); }
+        .btn-plus-10 { background: #E5E5EA; color: var(--ios-text); }
+        .segmented-control { background-color: #E5E5EA; border-radius: 9px; padding: 2px; display: flex; margin-bottom: 15px; }
+        .segment-btn { flex: 1; text-align: center; padding: 6px; border-radius: 7px; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: all 0.2s; text-decoration: none; border: 0.5px solid transparent; color: var(--ios-text);}
+        .segment-btn.active { background-color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); font-weight: 600; }
+        .search-container { position: sticky; top: 98px; z-index: 900; background-color: var(--ios-bg); padding: 10px 0; }
+        .ios-search-input { background-color: #E5E5EA; border: none; border-radius: 10px; padding: 12px 15px; padding-left: 40px; width: 100%; font-size: 1.1rem; }
+        .search-icon { position: absolute; left: 25px; top: 25px; color: #8E8E93; }
+        .badge-ios { background: #FF3B30; color: white; border-radius: 10px; padding: 2px 6px; font-size: 0.75rem; vertical-align: text-top; margin-left: 4px; }
+        #form-nuevo-manual { display: none; border: 2px solid var(--ios-blue); }
+        #alerta-recuperacion { display:none; background: white; border-radius: 16px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin-bottom: 20px; text-align: center; }
+        .flash-update { animation: flash 0.4s; } @keyframes flash { 0% { background-color: var(--ios-green); } 100% { } }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-ios px-4">
+        <div class="container-fluid px-0 d-flex justify-content-between align-items-center flex-wrap gap-2">
+            
+            <a class="navbar-brand d-flex align-items-center gap-3" href="#">
+                <img src="logo.jpg" alt="Logo" height="65" class="rounded-4 shadow-sm p-1 bg-white" onerror="this.style.display='none'">
+                <div>
+                    <div class="brand-text-main">RapiTienda</div>
+                    <div class="brand-text-sub">Inventario Campo Alegre</div>
+                </div>
+            </a>
+
+            <div class="d-flex gap-2 align-items-center overflow-auto pb-1">
+                <button id="btnInstall" class="btn-pill-nav btn-install me-2" style="display: none;" title="Instalar App en el dispositivo">
+                    <i class="bi bi-download fs-5 me-2"></i>
+                    <span class="d-none d-md-inline">Instalar App</span>
+                </button>
+
+                <button onclick="guardarProgresoLocal()" class="btn-pill-nav btn-save-local" title="Guardar en Tablet">
+                    <i class="bi bi-floppy-fill fs-5 me-2 text-primary"></i> <span class="d-none d-lg-inline">Guardar</span>
+                </button>
+                <button onclick="descargarBackup()" class="btn-pill-nav btn-backup" title="Descargar Copia de Seguridad">
+                    <i class="bi bi-shield-lock-fill fs-5 me-2"></i> <span class="d-none d-lg-inline">Backup</span>
+                </button>
+                <button onclick="descargarExcelFinal()" class="btn-pill-nav btn-finish px-4">
+                    <i class="bi bi-file-earmark-spreadsheet-fill fs-5 me-2"></i> Finalizar
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-3">
+        <div id="zona-carga" class="text-center mt-5">
+            <div id="alerta-recuperacion">
+                <h5 class="fw-bold mb-2">Sesión Encontrada</h5>
+                <p class="text-muted small mb-3">¿Quieres continuar donde lo dejaste?</p>
+                <div class="d-flex gap-2 justify-content-center"><button onclick="borrarSesion()" class="btn btn-light text-danger fw-bold flex-fill rounded-pill">Borrar</button><button onclick="recuperarSesion()" class="btn btn-primary fw-bold flex-fill rounded-pill" style="background: var(--ios-blue); border:none;">Recuperar</button></div>
+            </div>
+            <div class="card-ios p-5 mt-4 text-center shadow-lg">
+                <i class="bi bi-folder2-open display-1 mb-3" style="color: var(--ios-blue);"></i>
+                <h2 class="fw-bold">Cargar Inventario Maestro</h2>
+                <p class="text-muted mb-4">Selecciona el archivo Excel (.xlsx) para comenzar</p>
+                <input type="file" id="inputExcelInicial" class="form-control form-control-lg rounded-pill" accept=".xlsx, .xls" style="border: 2px solid #E5E5EA; padding: 15px;" />
+            </div>
+        </div>
+
+        <div id="zona-trabajo" style="display: none;">
+            <div class="search-container">
+                <div class="container px-0">
+                    <div class="d-flex gap-2 mb-3">
+                        <button onclick="toggleManual()" class="btn btn-light flex-fill fw-bold text-success shadow-sm border-0 rounded-4 py-2"><i class="bi bi-plus-lg"></i> Manual</button>
+                        <button onclick="document.getElementById('inputExcelFusion').click()" class="btn btn-light flex-fill fw-bold text-primary shadow-sm border-0 rounded-4 py-2"><i class="bi bi-layers"></i> Fusionar Excel</button>
+                        <input type="file" id="inputExcelFusion" style="display: none;" accept=".xlsx, .xls" />
+                    </div>
+                    <div id="form-nuevo-manual" class="card-ios p-3 shadow-sm mb-3">
+                        <h6 class="fw-bold mb-2 text-primary">Nuevo Producto Manual</h6>
+                        <div class="row g-2"><div class="col-4"><input type="text" id="new-code" class="form-control rounded-3" placeholder="Cód."></div><div class="col-5"><input type="text" id="new-name" class="form-control rounded-3" placeholder="Nombre"></div><div class="col-3"><input type="number" id="new-qty" class="form-control rounded-3 fw-bold text-center" value="1"></div><div class="col-12 mt-2"><button onclick="guardarManual()" class="btn btn-primary w-100 rounded-pill fw-bold" style="background: var(--ios-blue); border:none;">Guardar Producto</button></div></div>
+                    </div>
+                    <div class="position-relative mb-3"><i class="bi bi-search search-icon fs-5"></i><input type="text" id="buscador" class="ios-search-input shadow-sm" placeholder="Escanear código o buscar nombre..." autocomplete="off"><button class="btn position-absolute end-0 top-0 mt-2 me-2 text-muted border-0 bg-transparent" onclick="limpiarBuscador()" style="z-index: 999;">✕</button></div>
+                    <div class="segmented-control shadow-sm">
+                        <a class="segment-btn active" id="tab-todos" onclick="cambiarFiltro('todos')">Todos</a>
+                        <a class="segment-btn" id="tab-listos" onclick="cambiarFiltro('listos')">Listos <span id="bad-listos" class="fw-bold text-success small ms-1">0</span></a>
+                        <a class="segment-btn" id="tab-pendientes" onclick="cambiarFiltro('pendientes')">Falta <span id="bad-pendientes" class="badge-ios ms-1">0</span></a>
+                    </div>
+                    <div class="d-flex justify-content-between px-3"><small class="text-muted fw-bold">Viendo: <span id="contador-visible">0</span></small><small class="text-muted fw-bold">Total Global: <span id="contador-total">0</span></small></div>
+                    <div id="msg-guardado" class="text-center text-primary fw-bold" style="font-size: 0.8rem; opacity:0; transition: opacity 0.5s; height: 15px;"><i class="bi bi-floppy2-fill me-1"></i> Guardado automático</div>
+                </div>
+            </div>
+            <div id="lista-productos" class="pt-2"></div>
+            <button id="btn-load-more" onclick="cargarMas()" class="btn btn-white w-100 py-3 mt-3 fw-bold text-primary shadow shadow-sm border-0 rounded-pill">Mostrar siguientes productos</button>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. LÓGICA DE INSTALACIÓN PWA ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').then(reg => console.log('SW registrado')).catch(err => console.log('SW error', err));
+            });
+        }
+
+        let deferredPrompt;
+        const btnInstall = document.getElementById('btnInstall');
+
+        // Capturar el evento de instalación que lanza Chrome/Edge
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            btnInstall.style.display = 'flex'; // Mostrar botón Instalar
+        });
+
+        btnInstall.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') { btnInstall.style.display = 'none'; }
+                deferredPrompt = null;
+            }
+        });
+
+        // --- 2. LÓGICA DE NEGOCIO DEL INVENTARIO ---
+        let inventarioTotal = [], listaFiltrada = [], limiteVisual = 50, filtroActual = 'todos'; 
+        const KEY_LOCAL_STORAGE = "inventario_rapitienda_final"; 
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        window.onload = function() {
+            if (localStorage.getItem(KEY_LOCAL_STORAGE)) {
+                document.getElementById('alerta-recuperacion').style.display = 'block';
+                document.getElementById('inputExcelInicial').disabled = true;
+                document.querySelector('#zona-carga .card-ios').style.opacity = '0.5';
+            }
+        };
+        function guardarProgresoLocal() {
+            if (inventarioTotal.length === 0) return;
+            localStorage.setItem(KEY_LOCAL_STORAGE, JSON.stringify(inventarioTotal));
+            const msg = document.getElementById('msg-guardado'); msg.style.opacity = '1'; setTimeout(() => msg.style.opacity = '0', 1500);
+            actualizarBadges();
+        }
+        function recuperarSesion() { inventarioTotal = JSON.parse(localStorage.getItem(KEY_LOCAL_STORAGE)); iniciarInterfaz(); }
+        function borrarSesion() { localStorage.removeItem(KEY_LOCAL_STORAGE); document.getElementById('alerta-recuperacion').style.display = 'none'; document.getElementById('inputExcelInicial').disabled = false; document.querySelector('#zona-carga .card-ios').style.opacity = '1'; }
+        function playBeep() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+            o.connect(g); g.connect(audioCtx.destination); o.frequency.value = 800; o.type = 'sine'; g.gain.setValueAtTime(0.05, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1); o.start(); o.stop(audioCtx.currentTime + 0.1);
+        }
+        document.getElementById('inputExcelInicial').addEventListener('change', (evt) => procesarExcel(evt.target.files[0], true));
+        document.getElementById('inputExcelFusion').addEventListener('change', (evt) => { procesarExcel(evt.target.files[0], false); evt.target.value = ''; });
+        function procesarExcel(file, esInicial) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const data = new Uint8Array(e.target.result); const workbook = XLSX.read(data, { type: 'array' }); const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                if (esInicial) {
+                    inventarioTotal = jsonData.map((row) => ({ id: Date.now() + Math.random(), codigo: String(row.Codigo || row.codigo || "S/C").trim(), nombre: row.Nombre || row.nombre || "Sin Nombre", cantidad: Number(row.Cantidad) || Number(row.cantidad) || 0 }));
+                    iniciarInterfaz(); guardarProgresoLocal();
+                } else { fusionarDatos(jsonData); }
+            }; reader.readAsArrayBuffer(file);
+        }
+        function fusionarDatos(nuevosDatos) {
+            let agregados = 0, sumados = 0;
+            nuevosDatos.forEach(row => {
+                const codigoNuevo = String(row.Codigo || row.codigo || "S/C").trim(); const cantidadNueva = Number(row.Cantidad) || Number(row.cantidad) || 0; const existente = inventarioTotal.find(p => p.codigo === codigoNuevo);
+                if (existente) { existente.cantidad += cantidadNueva; sumados++; } else { inventarioTotal.push({id: Date.now() + Math.random(), codigo: codigoNuevo, nombre: row.Nombre||"S/N", cantidad: cantidadNueva}); agregados++; }
+            }); alert(`Fusión completada:\n✅ ${agregados} Productos nuevos.\n➕ ${sumados} Cantidades sumadas a existentes.`); aplicarFiltros(); guardarProgresoLocal();
+        }
+        function iniciarInterfaz() { document.getElementById('zona-carga').style.display = 'none'; document.getElementById('zona-trabajo').style.display = 'block'; aplicarFiltros(); }
+        function cambiarFiltro(nuevoFiltro) { filtroActual = nuevoFiltro; document.querySelectorAll('.segment-btn').forEach(el => el.classList.remove('active')); document.getElementById(`tab-${nuevoFiltro}`).classList.add('active'); aplicarFiltros(); }
+        function aplicarFiltros() {
+            const texto = document.getElementById('buscador').value.toLowerCase(); let res = inventarioTotal.filter(p => p.codigo.toLowerCase().includes(texto) || p.nombre.toLowerCase().includes(texto));
+            if (filtroActual === 'listos') res = res.filter(p => p.cantidad > 0); else if (filtroActual === 'pendientes') res = res.filter(p => p.cantidad === 0);
+            listaFiltrada = res; limiteVisual = 50; renderizar(); actualizarBadges();
+        }
+        function actualizarBadges() { const listos = inventarioTotal.filter(p => p.cantidad > 0).length; document.getElementById('bad-listos').innerText = listos; document.getElementById('bad-pendientes').innerText = inventarioTotal.length - listos; }
+        function renderizar() {
+            const contenedor = document.getElementById('lista-productos'), botonMas = document.getElementById('btn-load-more'); const aMostrar = listaFiltrada.slice(0, limiteVisual);
+            document.getElementById('contador-visible').innerText = aMostrar.length; document.getElementById('contador-total').innerText = inventarioTotal.length; contenedor.innerHTML = '';
+            aMostrar.forEach(prod => {
+                const claseExtra = prod.cantidad > 0 ? 'card-contado' : '';
+                const html = `<div class="card-ios ${claseExtra} p-3" id="card-${prod.id}"><div class="d-flex justify-content-between align-items-center"><div style="flex: 1; min-width: 0; padding-right: 10px;"><h6 class="mb-1 text-dark fw-bold text-truncate" style="font-size: 1.1rem;">${prod.nombre}</h6><span class="text-muted fw-bold small" style="background: #E5E5EA; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.5px;">${prod.codigo}</span></div><div class="d-flex align-items-center"><button onclick="sumar('${prod.id}', 1)" class="btn-circle btn-plus-1">+1</button><button onclick="sumar('${prod.id}', 5)" class="btn-circle btn-plus-5">+5</button><button onclick="sumar('${prod.id}', 10)" class="btn-circle btn-plus-10">+10</button><div style="width: 80px; margin-left: 8px;"><input type="number" id="qty-${prod.id}" value="${prod.cantidad}" class="stock-input w-100 shadow-sm" onchange="actualizarManual('${prod.id}', this.value)" onfocus="this.select()"></div></div></div></div>`;
+                contenedor.innerHTML += html;
+            }); botonMas.style.display = (aMostrar.length >= listaFiltrada.length) ? 'none' : 'block';
+        }
+        function cargarMas() { limiteVisual += 50; renderizar(); }
+        document.getElementById('buscador').addEventListener('keyup', aplicarFiltros); function limpiarBuscador() { document.getElementById('buscador').value = ''; aplicarFiltros(); }
+        function sumar(id, valor) { const p = inventarioTotal.find(x => String(x.id) === String(id)); if (p) { p.cantidad += valor; actualizarVisual(id, p.cantidad); playBeep(); guardarProgresoLocal(); } }
+        function actualizarManual(id, valor) { const p = inventarioTotal.find(x => String(x.id) === String(id)); if (p) { p.cantidad = Number(valor); playBeep(); actualizarVisual(id, p.cantidad); guardarProgresoLocal(); } }
+        function actualizarVisual(id, cant) { const input = document.getElementById(`qty-${id}`), card = document.getElementById(`card-${id}`); if (input) { input.value = cant; input.style.backgroundColor = '#d1e7dd'; setTimeout(()=> input.style.backgroundColor = '', 400); } if (card) { if (cant > 0) card.classList.add('card-contado'); else card.classList.remove('card-contado'); } actualizarBadges(); }
+        function descargarExcelFinal() { if(!confirm("¿Descargar Inventario FINAL?")) return; generarExcel("Inventario_RapiTienda_FINAL"); }
+        function descargarBackup() { generarExcel("RESPALDO_RapiTienda"); }
+        function generarExcel(prefijo) { const ws = XLSX.utils.json_to_sheet(inventarioTotal.map(p => ({ Codigo: p.codigo, Nombre: p.nombre, Cantidad: p.cantidad }))); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Inventario"); XLSX.writeFile(wb, `${prefijo}_${new Date().toLocaleDateString('es-ES').replace(/\//g,'-')}_${new Date().toLocaleTimeString().replace(/:/g,'-')}.xlsx`); }
+        function toggleManual() { const f = document.getElementById('form-nuevo-manual'); f.style.display = f.style.display === 'none' ? 'block' : 'none'; }
+        function guardarManual() { const cod = document.getElementById('new-code').value.trim(); if (inventarioTotal.some(p => p.codigo === cod)) return alert("Código duplicado"); inventarioTotal.unshift({ id: Date.now(), codigo: cod, nombre: document.getElementById('new-name').value, cantidad: Number(document.getElementById('new-qty').value) }); toggleManual(); alert("✅ Añadido"); aplicarFiltros(); guardarProgresoLocal(); }
+        window.onbeforeunload = () => "Confirma cierre";
+    </script>
+</body>
+</html>
