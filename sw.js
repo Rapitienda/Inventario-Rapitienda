@@ -1,9 +1,10 @@
-const CACHE_NAME = 'rapitienda-v8-pwa';
+const CACHE_NAME = 'rapitienda-v9-pwa';
 const urlsToCache = [
   './',
   './index.html',
   './manifest.json',
-  './logo.jpg'
+  './logo.jpg',
+  './inventario.png'
 ];
 
 self.addEventListener('install', event => {
@@ -19,7 +20,6 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
       .then(response => {
-        // Devuelve lo cacheado o hace la petición a internet
         return response || fetch(event.request);
       })
   );

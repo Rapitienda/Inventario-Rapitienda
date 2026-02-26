@@ -7,7 +7,7 @@
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#007AFF">
-    <link rel="apple-touch-icon" href="logo.jpg">
+    <link rel="apple-touch-icon" href="inventario.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     
@@ -134,11 +134,10 @@
         let deferredPrompt;
         const btnInstall = document.getElementById('btnInstall');
 
-        // Capturar el evento de instalación que lanza Chrome/Edge
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            btnInstall.style.display = 'flex'; // Mostrar botón Instalar
+            btnInstall.style.display = 'flex'; 
         });
 
         btnInstall.addEventListener('click', async () => {

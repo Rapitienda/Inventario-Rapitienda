@@ -1,16 +1,16 @@
 {
-  "name": "Inventario RapiTienda Campo Alegre",
-  "short_name": "RapiTienda",
+  "name": "Inventario RapiTienda",
+  "short_name": "Inventario RapiTienda",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#F2F2F7",
+  "background_color": "#FDFCF8",
   "theme_color": "#007AFF",
   "orientation": "any",
   "icons": [
     {
-      "src": "logo.jpg",
+      "src": "inventario.png",
       "sizes": "512x512",
-      "type": "image/jpeg",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]
